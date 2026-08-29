@@ -97,4 +97,31 @@ class AtaManifest {
       };
 
   String toJsonString() => const JsonEncoder.withIndent('  ').convert(toJson());
+
+  AtaManifest copyWith({
+    String? id,
+    String? name,
+    String? version,
+    String? author,
+    String? description,
+    String? entry,
+    String? iconPath,
+    String? type,
+    List<String>? permissions,
+    String? minRuntime,
+    int? formatVersion,
+  }) =>
+      AtaManifest(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        version: version ?? this.version,
+        author: author ?? this.author,
+        description: description ?? this.description,
+        entry: entry ?? this.entry,
+        iconPath: iconPath ?? this.iconPath,
+        type: type ?? this.type,
+        permissions: permissions ?? this.permissions,
+        minRuntime: minRuntime ?? this.minRuntime,
+        formatVersion: formatVersion ?? this.formatVersion,
+      );
 }

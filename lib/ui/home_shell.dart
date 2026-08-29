@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import '../features/installed/installed_screen.dart';
 import '../features/store/store_screen.dart';
+import '../features/editor/projects_screen.dart';
 import '../features/console/console_screen.dart';
 import '../features/docs/docs_screen.dart';
 
@@ -17,13 +18,14 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
 
-  static const _titles = ['应用', '应用市场', '控制台', '文档'];
+  static const _titles = ['应用', '应用市场', '编辑器', '控制台', '文档'];
 
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
       const InstalledScreen(),
       const StoreScreen(),
+      const ProjectsScreen(),
       const ConsoleScreen(),
       const DocsScreen(),
     ];
@@ -62,6 +64,10 @@ class _HomeShellState extends State<HomeShell> {
             selectedIcon: Icon(Icons.storefront),
             label: Text('市场')),
         NavigationRailDestination(
+            icon: Icon(Icons.code_outlined),
+            selectedIcon: Icon(Icons.code),
+            label: Text('编辑器')),
+        NavigationRailDestination(
             icon: Icon(Icons.terminal_outlined),
             selectedIcon: Icon(Icons.terminal),
             label: Text('控制台')),
@@ -88,6 +94,8 @@ class _HomeShellState extends State<HomeShell> {
                       icon: Icon(Icons.grid_view_outlined), label: Text('应用')),
                   NavigationRailDestination(
                       icon: Icon(Icons.storefront_outlined), label: Text('市场')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.code_outlined), label: Text('编辑器')),
                   NavigationRailDestination(
                       icon: Icon(Icons.terminal_outlined), label: Text('控制台')),
                   NavigationRailDestination(

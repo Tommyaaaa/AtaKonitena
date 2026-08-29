@@ -5,6 +5,7 @@ import 'data/atak_store.dart';
 import 'core/atak/atak_storage.dart';
 import 'core/atak/atak_installer.dart';
 import 'core/container/container_manager.dart';
+import 'features/editor/project_service.dart';
 
 /// 全局服务单例（App 启动时初始化）。
 class AppServices {
@@ -16,11 +17,13 @@ class AppServices {
   final AtakStorage storage;
   final AtakInstaller installer;
   final ContainerManager containerManager;
+  final ProjectService projects;
 
   AppServices._(this.store)
       : storage = AtakStorage(store),
         installer = AtakInstaller(AtakStorage(store)),
-        containerManager = ContainerManager(AtakStorage(store)) {
+        containerManager = ContainerManager(AtakStorage(store)),
+        projects = ProjectService(store) {
     _instance = this;
   }
 

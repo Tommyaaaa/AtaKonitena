@@ -157,43 +157,22 @@ class _InstalledScreenState extends State<InstalledScreen> {
     }
     return RefreshIndicator(
       onRefresh: () async => _reload(),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final wide = constraints.maxWidth >= 900;
-          if (wide) {
-            final columns =
-                ((constraints.maxWidth - 48) / 280).floor().clamp(2, 6);
-            return GridView.builder(
-              padding: const EdgeInsets.all(20),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: _apps.length,
-              itemBuilder: (context, i) => _card(_apps[i], grid: true),
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: _apps.length,
-            itemBuilder: (context, i) => _card(_apps[i]),
-          );
-        },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _apps.length,
+        itemBuilder: (context, i) => _card(_apps[i]),
       ),
     );
   }
 
-  Widget _card(AtaManifest m, {bool grid = false}) {
+  Widget _card(AtaManifest m) {
     final scheme = Theme.of(context).colorScheme;
     final content = Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
-        crossAxisAlignment:
-            grid ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          AppIcon(id: m.id, iconPath: m.iconPath, size: grid ? 56 : 44),
+          AppIcon(id: m.id, iconPath: m.iconPath, size: 44),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -230,6 +209,7 @@ class _InstalledScreenState extends State<InstalledScreen> {
     );
     return Card(
       clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(onTap: () => _launch(m), child: content),
     );
   }

@@ -119,68 +119,67 @@ class _StoreScreenState extends State<StoreScreen> {
     final isInstalled = _installed.contains(ex.id);
     return Card(
       clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: scheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.apps, color: scheme.onPrimaryContainer),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: scheme.primaryContainer,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.apps, color: scheme.onPrimaryContainer),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text(ex.name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('v${ex.version}  ·  ${ex.author}',
-                          style: TextStyle(
-                              fontSize: 12, color: scheme.onSurfaceVariant)),
+                      Expanded(
+                        child: Text(ex.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15)),
+                      ),
+                      if (isInstalled)
+                        const Chip(
+                          label: Text('已安装'),
+                          visualDensity: VisualDensity.compact,
+                        ),
                     ],
                   ),
-                ),
-                if (isInstalled)
-                  Chip(
-                    label: const Text('已安装'),
-                    visualDensity: VisualDensity.compact,
+                  const SizedBox(height: 4),
+                  Text('v${ex.version}  ·  ${ex.author}',
+                      style: TextStyle(
+                          fontSize: 12, color: scheme.onSurfaceVariant)),
+                  const SizedBox(height: 8),
+                  Text(ex.description),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    children: [
+                      for (final p in ex.permissions)
+                        Chip(
+                          label: Text(_permissionLabel(p),
+                              style: const TextStyle(fontSize: 11)),
+                          visualDensity: VisualDensity.compact,
+                          backgroundColor: scheme.surfaceContainerHighest,
+                        ),
+                    ],
                   ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(ex.description),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 6,
-              children: [
-                for (final p in ex.permissions)
-                  Chip(
-                    label: Text(_permissionLabel(p), style: const TextStyle(fontSize: 11)),
-                    visualDensity: VisualDensity.compact,
-                    backgroundColor: scheme.surfaceContainerHighest,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () => _installExample(ex),
-                  icon: const Icon(Icons.download_outlined, size: 18),
-                  label: Text(isInstalled ? '重新安装' : '安装'),
-                ),
-              ],
+            const SizedBox(width: 12),
+            OutlinedButton.icon(
+              onPressed: () => _installExample(ex),
+              icon: const Icon(Icons.download_outlined, size: 18),
+              label: Text(isInstalled ? '重新安装' : '安装'),
             ),
           ],
         ),
