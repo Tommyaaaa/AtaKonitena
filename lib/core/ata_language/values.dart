@@ -81,7 +81,9 @@ class AtaType {
     return switch (v) {
       bool b => b ? 'true' : 'false',
       String s => s,
-      num n => n.toString(),
+      // 整数型 double 显示为整数（如 11 而非 11.0）。
+      num n =>
+        n is double && n == n.truncateToDouble() ? n.toInt().toString() : n.toString(),
       AtaList l => _listToDisplay(l.items),
       AtaMapVal m => _mapToDisplay(m.entries),
       AtaHostObject o => '<${o.name}>',

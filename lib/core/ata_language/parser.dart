@@ -19,6 +19,9 @@ class Parser {
     return Program(statements);
   }
 
+  /// 解析单个表达式（供字符串插值 `${...}` 子表达式等场景），不要求分号。
+  Expr parseExpression() => _expression();
+
   bool get _isAtEnd => peek().type == TokenType.eof;
   Token get _previous => tokens[_current - 1];
   Token peek() => tokens[_current];
@@ -154,19 +157,23 @@ class Parser {
 
   Stmt _forStmt() {
     _consume(TokenType.leftParen, "for 后应接 '('");
+    // init 部分（可为空；有内容时以分号结尾）
     Stmt? init;
-    if (!_matchAny(const [TokenType.semicolon])) {
-      if (_checkKeyword('let') || _checkKeyword('const')) {
-        init = _letStmtNoSemi();
-      } else {
-        init = _exprStatementNoSemi();
-      }
+    if (_check(TokenType.semicolon)) {
+      advance(); // 空 init
+    } else {
+      init = (_checkKeyword('let') || _checkKeyword('const'))
+          ? _letStmtNoSemi()
+          : _exprStatementNoSemi();
+      _consume(TokenType.semicolon, "for init 后应接 ';'");
     }
+    // cond 部分（可为空，读到分号为止）
     Expr? cond;
     if (!_check(TokenType.semicolon)) {
       cond = _expression();
     }
     _consume(TokenType.semicolon, "for 条件后应接 ';'");
+    // incr 部分（可为空）
     Expr? incr;
     if (!_check(TokenType.rightParen)) {
       incr = _expression();
@@ -247,7 +254,12 @@ class Parser {
   }
 
   Expr _ternary() {
-    final cond = _logicalOr();
+    var cond = _logicalOr();
+    // 空合并 a ?? b（优先级高于三目，左结合）
+    while (_matchAny(const [TokenType.questionQuestion])) {
+      final right = _logicalOr();
+      cond = BinaryExpr(TokenType.questionQuestion, cond, right);
+    }
     if (_matchAny(const [TokenType.question])) {
       final thenBranch = _expression();
       _consume(TokenType.colon, "三元表达式需要 ':'");

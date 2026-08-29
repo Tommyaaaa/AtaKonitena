@@ -95,6 +95,8 @@ class Interpreter {
       final n = (arg(a, 0) as num).toInt();
       return AtaList(List<int>.generate(n < 0 ? 0 : n, (i) => i));
     }));
+    // 宿主主命名空间 `ata`：默认可用（无需 import）。
+    globals.define('ata', _ataModule);
   }
 
   void _installGlobals() {
@@ -231,16 +233,7 @@ class Interpreter {
     try {
       final lexer = Lexer(exprStr);
       final parser = Parser(lexer.tokenize());
-      final program = parser.parse();
-      Object? last;
-      for (final stmt in program.statements) {
-        if (stmt is ExprStmt) {
-          last = await evaluate(stmt.expr);
-        } else {
-          last = await _execute(stmt);
-        }
-      }
-      return last ?? '';
+      return await evaluate(parser.parseExpression());
     } catch (e) {
       return '<err: $e>';
     }
@@ -394,6 +387,8 @@ class Interpreter {
         return _equals(l, r);
       case TokenType.bangEqual:
         return !_equals(l, r);
+      case TokenType.questionQuestion:
+        return l ?? r;
       default:
         throw AtaRuntimeError('未知二元运算符', line: expr.token?.line);
     }

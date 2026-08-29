@@ -47,6 +47,7 @@ enum TokenType {
   equal,
   andAnd,
   orOr,
+  questionQuestion, // ??
   arrow,
 
   eof,

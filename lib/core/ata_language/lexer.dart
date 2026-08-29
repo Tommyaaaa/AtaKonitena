@@ -95,7 +95,7 @@ class Lexer {
         _addToken(_match('=') ? TokenType.arrow : TokenType.colon);
         break;
       case '?':
-        _addToken(TokenType.question);
+        _addToken(_match('?') ? TokenType.questionQuestion : TokenType.question);
         break;
       case '.':
         if (_isDigit(peek())) {
