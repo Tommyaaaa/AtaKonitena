@@ -21,14 +21,20 @@ subprojects {
 
 // 统一把各 Android 模块（含 file_picker 等插件）的 compileSdk 提升到 36，
 // 以满足 flutter_plugin_android_lifecycle 等依赖对 API 36 的最低要求。
+// 兼容项目评估时机：已评估的直接赋值，未评估的用 afterEvaluate。
 subprojects {
-    afterEvaluate {
+    val applyCompileSdk = {
         extensions.findByName("android")?.let { ext ->
             when (ext) {
                 is com.android.build.api.dsl.ApplicationExtension -> ext.compileSdk = 36
                 is com.android.build.api.dsl.LibraryExtension -> ext.compileSdk = 36
             }
         }
+    }
+    if (state.executed) {
+        applyCompileSdk()
+    } else {
+        afterEvaluate { applyCompileSdk() }
     }
 }
 
