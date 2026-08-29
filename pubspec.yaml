@@ -1,0 +1,24 @@
+name: atakonitena
+description: "AtaKonitena — 跨平台轻量级应用沙盒容器，内置 AtaLanguage 语言与 .atak 应用安装体系。"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  archive: ^3.6.1
+  file_picker: ^8.1.2
+  http: ^1.2.2
+  path_provider: ^2.1.4
+  url_launcher: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
