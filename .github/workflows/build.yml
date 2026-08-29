@@ -82,6 +82,7 @@ jobs:
           name: atakonitena-android-apk
           path: |
             build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
 
       - name: Upload AppBundle
         uses: actions/upload-artifact@v4
@@ -89,6 +90,7 @@ jobs:
           name: atakonitena-android-aab
           path: |
             build/app/outputs/bundle/release/*.aab
+          if-no-files-found: error
 
   # ------------------------------------------------------------------
   # iOS（无签名构建，产出 .app；IPA 需在带签名的 runner 上做）
@@ -123,6 +125,7 @@ jobs:
         with:
           name: atakonitena-ios
           path: atakonitena-ios.app.zip
+          if-no-files-found: error
 
   # ------------------------------------------------------------------
   # Web（Static Build）
@@ -155,6 +158,7 @@ jobs:
         with:
           name: atakonitena-web
           path: build/web
+          if-no-files-found: error
 
   # ------------------------------------------------------------------
   # Linux（Debian bundle）
@@ -190,13 +194,14 @@ jobs:
       - name: Package bundle
         run: |
           cd build/linux/x64/release/bundle
-          tar czf ../../../../atakonitena-linux.tar.gz .
+          tar czf "$GITHUB_WORKSPACE/atakonitena-linux.tar.gz" .
 
       - name: Upload Linux
         uses: actions/upload-artifact@v4
         with:
           name: atakonitena-linux
           path: atakonitena-linux.tar.gz
+          if-no-files-found: error
 
   # ------------------------------------------------------------------
   # macOS（Apple Silicon + Intel）
@@ -236,6 +241,7 @@ jobs:
         with:
           name: atakonitena-macos
           path: atakonitena-macos.zip
+          if-no-files-found: error
 
   # ------------------------------------------------------------------
   # Windows（x64 Release）
@@ -268,6 +274,7 @@ jobs:
         with:
           name: atakonitena-windows
           path: build/windows/x64/runner/Release
+          if-no-files-found: error
 
   # ------------------------------------------------------------------
   # 发布：打 tag 时汇总产物到 GitHub Release
