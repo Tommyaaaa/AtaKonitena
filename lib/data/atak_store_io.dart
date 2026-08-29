@@ -1,6 +1,7 @@
 /// AtakStore 基于 dart:io 文件系统的实现（Android/iOS/桌面端）。
 library;
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
@@ -37,7 +38,11 @@ class AtakStoreIO implements AtakStore {
     if (p == null) return const [];
     final d = Directory(p);
     if (!d.existsSync()) return const [];
-    return d.listSync(recursive: false).map((e) => e.path.split('/').last).toList();
+    // Windows 路径用 \，需要同时处理 / 和 \
+    return d.listSync(recursive: false).map((e) {
+      final parts = e.path.replaceAll('\\', '/').split('/');
+      return parts.where((s) => s.isNotEmpty).last;
+    }).toList();
   }
 
   @override
@@ -50,19 +55,30 @@ class AtakStoreIO implements AtakStore {
   String? readText(String path) {
     final p = _clean(path);
     if (p == null || !File(p).existsSync()) return null;
-    return File(p).readAsStringSync();
+    try {
+      return File(p).readAsStringSync();
+    } catch (_) {
+      // 文件损坏或权限不足时返回 null，而非抛异常导致 UI 灰屏
+      return null;
+    }
   }
 
   @override
   Uint8List? readBytes(String path) {
     final p = _clean(path);
     if (p == null || !File(p).existsSync()) return null;
-    return File(p).readAsBytesSync();
+    try {
+      return File(p).readAsBytesSync();
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   void writeText(String path, String content) {
-    writeBytes(path, Uint8List.fromList(content.codeUnits));
+    // 必须使用 utf8.encode 而非 content.codeUnits：
+    // codeUnits 返回 UTF-16 码位，中文字符 > 255 会在原生平台触发 RangeError
+    writeBytes(path, Uint8List.fromList(utf8.encode(content)));
   }
 
   @override

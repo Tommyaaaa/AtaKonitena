@@ -15,6 +15,7 @@ class StoreScreen extends StatefulWidget {
 
 class _StoreScreenState extends State<StoreScreen> {
   Set<String> _installed = {};
+  String? _error;
 
   @override
   void initState() {
@@ -23,10 +24,17 @@ class _StoreScreenState extends State<StoreScreen> {
   }
 
   void _reload() {
-    final installer = AppServices.instance.installer;
-    setState(() {
-      _installed = installer.listInstalled().map((m) => m.id).toSet();
-    });
+    try {
+      final installer = AppServices.instance.installer;
+      setState(() {
+        _installed = installer.listInstalled().map((m) => m.id).toSet();
+        _error = null;
+      });
+    } catch (e) {
+      setState(() {
+        _error = '$e';
+      });
+    }
   }
 
   Future<void> _installExample(ExampleApp ex) async {
@@ -49,6 +57,36 @@ class _StoreScreenState extends State<StoreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 错误状态：存储读取异常时显示提示而非灰屏
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline,
+                size: 64, color: Theme.of(context).colorScheme.error),
+            const SizedBox(height: 16),
+            const Text('存储读取异常'),
+            const SizedBox(height: 8),
+            Text('错误：$_error',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () {
+                try {
+                  AppServices.instance.storage.repairIndex();
+                } catch (_) {}
+                _reload();
+              },
+              icon: const Icon(Icons.build_outlined),
+              label: const Text('修复并重试'),
+            ),
+          ],
+        ),
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [

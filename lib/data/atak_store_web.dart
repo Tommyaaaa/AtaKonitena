@@ -65,7 +65,11 @@ class AtakStoreWeb implements AtakStore {
   Uint8List? readBytes(String path) {
     final b64 = _memory[_norm(path)];
     if (b64 == null) return null;
-    return base64Decode(b64);
+    try {
+      return base64Decode(b64);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override

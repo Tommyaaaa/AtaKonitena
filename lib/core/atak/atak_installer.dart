@@ -22,15 +22,31 @@ class AtakInstaller {
     final existed = index.containsKey(manifest.id);
     final existedVersion = existed ? (index[manifest.id]?['version'] as String?) : null;
 
-    for (final f in archive.archive.files) {
-      final rel = f.name.replaceFirst(RegExp(r'^\./'), '');
-      if (rel.isEmpty) continue;
-      storage.store.writeBytes('${storage.appDir(manifest.id)}/$rel',
-          f.content as Uint8List);
-    }
+    // 先写入应用文件；若后续写索引失败则回滚，避免残留半成品
+    try {
+      for (final f in archive.archive.files) {
+        final rel = f.name.replaceFirst(RegExp(r'^\./'), '');
+        if (rel.isEmpty) continue;
+        // archive 包的 content 可能是 Uint8List 或 List<int>，需要安全转换
+        final raw = f.content;
+        final Uint8List fileBytes;
+        if (raw is Uint8List) {
+          fileBytes = raw;
+        } else if (raw is List<int>) {
+          fileBytes = Uint8List.fromList(raw);
+        } else {
+          continue; // 跳过非常规类型（如目录条目）
+        }
+        storage.store.writeBytes('${storage.appDir(manifest.id)}/$rel', fileBytes);
+      }
 
-    index[manifest.id] = manifest.toJson();
-    storage.writeIndex(index);
+      index[manifest.id] = manifest.toJson();
+      storage.writeIndex(index);
+    } catch (e) {
+      // 写索引或写文件时出错，回滚已写入的内容
+      storage.store.deleteRecursive(storage.appDir(manifest.id));
+      rethrow;
+    }
 
     if (!existed) return InstallResult.installed;
     return _compare(existedVersion, manifest.version);

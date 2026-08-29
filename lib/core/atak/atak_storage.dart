@@ -26,7 +26,12 @@ class AtakStorage {
   List<String> listAppIds() => store.listChildren('installed');
 
   Map<String, Map<String, dynamic>> readIndex() {
-    final raw = store.readText('installed.json');
+    String? raw;
+    try {
+      raw = store.readText('installed.json');
+    } catch (_) {
+      return {};
+    }
     if (raw == null) return {};
     try {
       final m = jsonDecode(raw);
@@ -47,7 +52,12 @@ class AtakStorage {
   // ---------- 容器沙盒键值存储 ----------
 
   Map<String, dynamic> _readContainerStore(String id) {
-    final raw = store.readText(containerStoreFile(id));
+    String? raw;
+    try {
+      raw = store.readText(containerStoreFile(id));
+    } catch (_) {
+      return {};
+    }
     if (raw == null) return {};
     try {
       final m = jsonDecode(raw);
@@ -77,4 +87,31 @@ class AtakStorage {
   @visibleForTesting
   Map<String, dynamic> debugContainerStore(String id) =>
       _readContainerStore(id);
+
+  /// 修复索引：扫描 installed/ 目录，从每个应用包的 manifest.json 重建索引。
+  /// 当 installed.json 丢失或损坏时调用。
+  void repairIndex() {
+    final ids = listAppIds();
+    final index = <String, Map<String, dynamic>>{};
+    for (final id in ids) {
+      final raw = store.readText('${appDir(id)}/manifest.json');
+      if (raw == null) continue;
+      try {
+        final m = jsonDecode(raw);
+        if (m is Map) {
+          index[id] = m.map((k, v) => MapEntry('$k', v));
+        }
+      } catch (_) {
+        // 跳过无法解析的清单
+      }
+    }
+    writeIndex(index);
+  }
+
+  /// 重置全部存储（用于极端损坏场景）。
+  void resetAll() {
+    store.deleteRecursive('installed');
+    store.deleteRecursive('containers');
+    store.deleteRecursive('installed.json');
+  }
 }

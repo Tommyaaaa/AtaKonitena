@@ -17,6 +17,7 @@ class InstalledScreen extends StatefulWidget {
 
 class _InstalledScreenState extends State<InstalledScreen> {
   List<AtaManifest> _apps = [];
+  String? _error;
 
   @override
   void initState() {
@@ -24,9 +25,35 @@ class _InstalledScreenState extends State<InstalledScreen> {
     _reload();
   }
 
-  void _reload() => setState(() {
-        _apps = AppServices.instance.installer.listInstalled();
+  void _reload() {
+    try {
+      final apps = AppServices.instance.installer.listInstalled();
+      setState(() {
+        _apps = apps;
+        _error = null;
       });
+    } catch (e) {
+      setState(() {
+        _error = '$e';
+      });
+    }
+  }
+
+  Future<void> _repair() async {
+    try {
+      AppServices.instance.storage.repairIndex();
+      _reload();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('存储索引已修复')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('修复失败：$e')),
+      );
+    }
+  }
 
   Future<void> _launch(AtaManifest manifest) async {
     final installer = AppServices.instance.installer;
@@ -72,6 +99,37 @@ class _InstalledScreenState extends State<InstalledScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 错误状态：存储读取异常时显示修复入口，而非灰屏
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline,
+                size: 64, color: Theme.of(context).colorScheme.error),
+            const SizedBox(height: 16),
+            const Text('存储读取异常'),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                '应用数据可能已损坏。尝试修复索引或重置存储。',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: _repair,
+              icon: const Icon(Icons.build_outlined),
+              label: const Text('修复索引'),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (_apps.isEmpty) {
       return Center(
         child: Column(
